@@ -1,11 +1,29 @@
 // search.cpp: определяет точку входа для консольного приложения.
 //
 
-#include "stdafx.h"
-#include <fstream>
-#include "linezap.h"
 
-//using namespace std;
+#include "stdafx.h"
+#define MAX_TEXT_LEN 1024
+#include <fstream>
+
+struct linezap
+{
+	TCHAR left[MAX_TEXT_LEN];
+	TCHAR right[MAX_TEXT_LEN];
+	unsigned int left_lenght;
+
+	linezap *pref;
+	linezap *next;
+
+	linezap *apref;
+	linezap *anext;
+};
+
+struct arrayline 
+{
+	linezap *begin;
+	linezap *end;
+};
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -26,7 +44,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 2;
 	}
 	
-	TCHAR bufer[2048];
+	TCHAR bufer[MAX_TEXT_LEN * 2];
 	TCHAR *pdest;
 	// Для сохранения
 	pdest = _tcsrchr(file_name, '.');
@@ -49,6 +67,13 @@ int _tmain(int argc, _TCHAR* argv[])
 		_tcscat_s(file_name_output_dub, _countof(file_name_output_dub), file_name);
 		_tcscat_s(file_name_output_dub, _countof(file_name_output_dub), ".dub");
 	}
+	// Чтение файла
+	arrayline sortbycountlines[1024];
+	for(int i = 0; i < MAX_TEXT_LEN; i++) 
+	{
+		sortbycountlines[i].begin = NULL;
+		sortbycountlines[i].end = NULL;
+	}
 	linezap *begin_file_line = NULL;
 	linezap *end_file_line = NULL;
 	unsigned int count_lines = 0;
@@ -62,8 +87,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		} 
 		else 
 		{
-			TCHAR left[1024];
-			TCHAR right[1024];
+			TCHAR left[MAX_TEXT_LEN];
+			TCHAR right[MAX_TEXT_LEN];
+			unsigned int len;
 
 			_tcsncpy_s(left, bufer, (int)(pdest - bufer));
 			
@@ -72,20 +98,35 @@ int _tmain(int argc, _TCHAR* argv[])
 			linezap *file_line = new linezap;
 			_tcscpy_s(file_line->left, left);
 			_tcscpy_s(file_line->right, right);
-			file_line->left_lenght = _tcslen(file_line->left);
+			len = _tcslen(file_line->left);
+			file_line->left_lenght = len;
 			file_line->pref = NULL;
 			file_line->next = NULL;
+			file_line->anext = NULL;
+			file_line->apref = NULL;
 			count_lines += 1;
 			if(begin_file_line == NULL) 
 			{
 				begin_file_line = file_line;
-				end_file_line = begin_file_line;
+				end_file_line = file_line;
 			} 
 			else 
 			{
 				file_line->pref = end_file_line;
 				end_file_line->next = file_line;
 				end_file_line = file_line;
+			}
+			// Сортируем в массив
+			if(sortbycountlines[len - 1].begin == NULL) 
+			{
+				sortbycountlines[len - 1].begin = file_line;
+				sortbycountlines[len - 1].end = file_line;
+			}
+			else
+			{
+				file_line->apref = sortbycountlines[len - 1].end;
+				sortbycountlines[len - 1].end->anext = file_line;
+				sortbycountlines[len - 1].end = file_line;
 			}
 		}
 	}
@@ -96,34 +137,29 @@ int _tmain(int argc, _TCHAR* argv[])
 	linezap *cursor_line = NULL;
 	unsigned int position_lines = 0;
 	// Поиск совпадений
-	if(begin_file_line == NULL)
+	for(int i = 0; i < MAX_TEXT_LEN; i++)
 	{
-		_tprintf_s("Негде искать");
-		return 3;
-	} 
-	else 
-	{
-		select_line = begin_file_line;
-		
-	}
-	do {
-		position_lines += 1;
-		cursor_line = begin_file_line;
-		if(cursor_line == NULL)
-			break;
+		if(sortbycountlines[i].begin == NULL) 
+		{
+			_tprintf_s("Нет строк с длиной = %d\n", i + 1);
+			continue;
+		}
+		_tprintf_s("Поиск совпадений в строках длиной = %d\n", i + 1);
+		select_line = sortbycountlines[i].begin;
 		do {
-			if(select_line == cursor_line)
-			{
-				cursor_line = cursor_line->next;
-				continue;
-			}
-			// Сравниваем по длине
-			if(select_line->left_lenght == cursor_line->left_lenght) 
-			{
+			position_lines += 1;
+			cursor_line = sortbycountlines[i].begin;
+			
+			do {
+				if(select_line == cursor_line) // Если сравниваемая строка и курсор совпали то переходим на следующую итерацию
+				{
+					cursor_line = cursor_line->anext;
+					continue;
+				}
 				// Сравниваем без учета регистра
 				if(_tcsicmp(select_line->left, cursor_line->left) == 0) 
 				{
-					linezap *buf = cursor_line->next;
+					// Переносим строку в список дублей
 					if(cursor_line->pref != NULL)
 					{
 						cursor_line->pref->next = cursor_line->next;
@@ -151,28 +187,44 @@ int _tmain(int argc, _TCHAR* argv[])
 						end_dub_line->next = cursor_line;
 						end_dub_line = cursor_line;
 					}
-					cursor_line = buf;
+
+					// Выкидываем из текущего списка
+					linezap *abuf = cursor_line->anext;
+					if(cursor_line->apref != NULL)
+					{
+						cursor_line->apref->anext = cursor_line->anext;
+					} 
+					else
+					{
+						cursor_line->anext->apref = NULL;
+					}
+					if(cursor_line->anext != NULL)
+					{
+						cursor_line->anext->apref = cursor_line->apref;
+					}
+					else
+					{
+						cursor_line->apref->anext = NULL;
+					}
+					cursor_line = abuf;
 				}
 				else
 				{
-					cursor_line = cursor_line->next;
+					cursor_line = cursor_line->anext;
 				}
-			} 
-			else 
+			} while(cursor_line != NULL);
+			select_line = select_line->anext; // Следующая строка с которой всё сравнивается
+			if((count_lines - position_lines) % 100 == 0) 
 			{
-				cursor_line = cursor_line->next;
+				_tprintf_s("Обработано %d строк из %d\n", position_lines, count_lines);
 			}
-		} while (cursor_line != NULL);
-		select_line = select_line->next;
-		if((count_lines - position_lines) % 100 == 0) 
-		{
-			_tprintf_s("Обработано %d строк из %d\n", position_lines, count_lines);
-		}
-	} while (select_line != NULL);
 
+		} while (select_line != NULL);
+	}
+	
 	// Сохранение
 	std::wfstream file_output_lines(file_name_output_lines, std::ios::out);
-	_tprintf_s("Сохранение файла с без дублей\n");
+	_tprintf_s("Сохранение файла без дублей\n");
 	if(!file_output_lines.is_open())
 	{
 		_tprintf_s("Ошибка при открытиии файла %s\n", file_name_output_lines);
@@ -216,7 +268,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		
 	}
 	do {
-		file_output_dub << select_line->left << L"\t" << select_line->right << L"\n\r";
+		file_output_dub << select_line->left << L"\t" << select_line->right << L"\n";
 		select_line = select_line->next;
 	} while (select_line != NULL);
 	file_output_dub.close();
