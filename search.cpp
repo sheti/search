@@ -25,6 +25,8 @@ struct arrayline
 	linezap *end;
 };
 
+bool save(linezap *begin, TCHAR *filename);
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	setlocale( LC_ALL,"Russian" );
@@ -79,26 +81,28 @@ int _tmain(int argc, _TCHAR* argv[])
 	unsigned int count_lines = 0;
 	while (file_input.good())
 	{
+		TCHAR left[MAX_TEXT_LEN] = "";
+		TCHAR right[MAX_TEXT_LEN] = "";
+		unsigned int len;
+
 		file_input.getline(bufer, _countof(bufer));
 		pdest = _tcsstr(bufer, "\t");
 		if(pdest == NULL) 
 		{
-			_tprintf_s("Разделитель не найден");
+			_tprintf_s("Разделитель не найден\n");
+			_tcsncpy_s(left, bufer, _tcslen(bufer));
 		} 
 		else 
 		{
-			TCHAR left[MAX_TEXT_LEN];
-			TCHAR right[MAX_TEXT_LEN];
-			unsigned int len;
-
 			_tcsncpy_s(left, bufer, (int)(pdest - bufer));
-			
 			_tcsncpy_s(right, pdest + 1, (int)(bufer - (bufer - pdest + 1)));
 			//_tcprintf_s(L"Str: %s|%s\n", left, right);
+		}
+		len = _tcslen(left);
+		if(len > 0) { // На случай если левая сторона пустая
 			linezap *file_line = new linezap;
 			_tcscpy_s(file_line->left, left);
 			_tcscpy_s(file_line->right, right);
-			len = _tcslen(file_line->left);
 			file_line->left_lenght = len;
 			file_line->pref = NULL;
 			file_line->next = NULL;
@@ -131,6 +135,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 	}
 	file_input.close();
+
 	linezap *begin_dub_line = NULL;
 	linezap *end_dub_line = NULL;
 	linezap *select_line = NULL;
@@ -141,10 +146,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		if(sortbycountlines[i].begin == NULL) 
 		{
-			_tprintf_s("Нет строк с длиной = %d\n", i + 1);
+			_tprintf_s("Нет строк с длинной = %d\n", i + 1);
 			continue;
 		}
-		_tprintf_s("Поиск совпадений в строках длиной = %d\n", i + 1);
+		_tprintf_s("Поиск совпадений в строках длинной = %d\n", i + 1);
 		select_line = sortbycountlines[i].begin;
 		do {
 			position_lines += 1;
@@ -167,6 +172,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					else
 					{
 						cursor_line->next->pref = NULL;
+						begin_file_line = cursor_line->next;
 					}
 					if(cursor_line->next != NULL)
 					{
@@ -175,11 +181,14 @@ int _tmain(int argc, _TCHAR* argv[])
 					else
 					{
 						cursor_line->pref->next = NULL;
+						end_file_line = cursor_line->pref;
 					}
+
 					if(begin_dub_line == NULL) 
 					{
 						begin_dub_line = cursor_line;
-						end_dub_line = begin_dub_line;
+						end_dub_line = cursor_line;
+						cursor_line->pref = NULL;
 					} 
 					else 
 					{
@@ -187,6 +196,7 @@ int _tmain(int argc, _TCHAR* argv[])
 						end_dub_line->next = cursor_line;
 						end_dub_line = cursor_line;
 					}
+					cursor_line->next = NULL;
 
 					// Выкидываем из текущего списка
 					linezap *abuf = cursor_line->anext;
@@ -197,6 +207,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					else
 					{
 						cursor_line->anext->apref = NULL;
+						sortbycountlines[i].begin = cursor_line->anext;
 					}
 					if(cursor_line->anext != NULL)
 					{
@@ -205,6 +216,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					else
 					{
 						cursor_line->apref->anext = NULL;
+						sortbycountlines[i].end = cursor_line->apref;
 					}
 					cursor_line = abuf;
 				}
@@ -223,55 +235,35 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	
 	// Сохранение
-	std::wfstream file_output_lines(file_name_output_lines, std::ios::out);
 	_tprintf_s("Сохранение файла без дублей\n");
-	if(!file_output_lines.is_open())
-	{
-		_tprintf_s("Ошибка при открытиии файла %s\n", file_name_output_lines);
-		file_output_lines.close();
-		return 2;
-	}
-	if(begin_file_line == NULL) 
-	{
-		_tprintf_s("Нечего сохранять");
-		file_output_lines.close();
-		return 3;
-	} 
-	else 
-	{
-		select_line = begin_file_line;
-		
-	}
-	do {
-		file_output_lines << select_line->left << L"\t" << select_line->right << L"\n";
-		select_line = select_line->next;
-	} while (select_line != NULL);
-	file_output_lines.close();
+	save(begin_file_line, file_name_output_lines);
+	
 	// Сохранение дублей
-	std::wfstream file_output_dub(file_name_output_dub, std::ios::out);
 	_tprintf_s("Сохранение файла с дублями\n");
-	if(!file_output_dub.is_open())
-	{
-		_tprintf_s("Ошибка при открытиии файла %s\n", file_name_output_dub);
-		file_output_dub.close();
-		return 2;
-	}
-	if(begin_dub_line == NULL) 
-	{
-		_tprintf_s("Нечего сохранять");
-		file_output_dub.close();
-		return 3;
-	} 
-	else 
-	{
-		select_line = begin_dub_line;
-		
-	}
-	do {
-		file_output_dub << select_line->left << L"\t" << select_line->right << L"\n";
-		select_line = select_line->next;
-	} while (select_line != NULL);
-	file_output_dub.close();
+	save(begin_dub_line, file_name_output_dub);
+	
 	return 0;
 }
 
+bool save(linezap *begin, TCHAR *filename) 
+{
+	if(begin == NULL) 
+	{
+		_tprintf_s("Нечего сохранять\n");
+		return false;
+	}
+	std::wfstream file_output(filename, std::ios::out);
+	if(!file_output.is_open())
+	{
+		_tprintf_s("Ошибка при открытиии файла %s\n", filename);
+		file_output.close();
+		return false;
+	}
+	linezap *cursor = begin;
+	do {
+		file_output << cursor->left << L"\t" << cursor->right << L"\n";
+		cursor = cursor->next;
+	} while (cursor != NULL);
+	file_output.close();
+	return true;
+}

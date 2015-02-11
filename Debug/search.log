@@ -1,19 +1,19 @@
-﻿Построение начато 11.02.2015 21:51:14.
-     1>Проект "D:\Users\Sheti\Documents\Visual Studio 2012\Projects\search\search\search.vcxproj" в узле 2 (целевые объекты Rebuild).
+﻿Построение начато 11.02.2015 23:49:38.
+     1>Проект "d:\Users\Sheti\documents\visual studio 2012\Projects\search\search\search.vcxproj" в узле 2 (целевые объекты Rebuild).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _USING_V110_SDK71_ /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Debug\search.pch" /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
          stdafx.cpp
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _USING_V110_SDK71_ /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\search.pch" /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt search.cpp
          search.cpp
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Users\Sheti\Documents\Visual Studio 2012\Projects\search\Debug\search.exe" /INCREMENTAL /NOLOGO /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"D:\Users\Sheti\Documents\Visual Studio 2012\Projects\search\Debug\search.pdb" /SUBSYSTEM:CONSOLE,"5.01" /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Users\Sheti\Documents\Visual Studio 2012\Projects\search\Debug\search.lib" /MACHINE:X86 Debug\search.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"d:\Users\Sheti\documents\visual studio 2012\Projects\search\Debug\search.exe" /INCREMENTAL /NOLOGO /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"d:\Users\Sheti\documents\visual studio 2012\Projects\search\Debug\search.pdb" /SUBSYSTEM:CONSOLE,"5.01" /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"d:\Users\Sheti\documents\visual studio 2012\Projects\search\Debug\search.lib" /MACHINE:X86 Debug\search.obj
          Debug\stdafx.obj
      1>LINK : warning LNK4075: не учитывается "/INCREMENTAL" из-за спецификации "/LTCG"
      1>search.obj : warning LNK4075: не учитывается "/EDITANDCONTINUE" из-за спецификации "/OPT:LBR"
          LINK : указан параметр /LTCG, но не требуется создание кода; удалите /LTCG из командной строки компоновки для повышения производительности компоновщика
-         search.vcxproj -> D:\Users\Sheti\Documents\Visual Studio 2012\Projects\search\Debug\search.exe
-     1>Построение проекта "D:\Users\Sheti\Documents\Visual Studio 2012\Projects\search\search\search.vcxproj" завершено (целевые объекты Rebuild).
+         search.vcxproj -> d:\Users\Sheti\documents\visual studio 2012\Projects\search\Debug\search.exe
+     1>Построение проекта "d:\Users\Sheti\documents\visual studio 2012\Projects\search\search\search.vcxproj" завершено (целевые объекты Rebuild).
 
 Построение успешно завершено.
 
-Затраченное время: 00:00:00.97
+Затраченное время: 00:00:01.30
